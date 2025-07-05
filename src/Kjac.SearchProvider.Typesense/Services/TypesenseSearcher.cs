@@ -139,9 +139,9 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
                             if (sorter is ScoreSorter)
                             {
-                                // apparently, backtick does not work inside _eval(), and since additional parentheses
-                                // will destroy the _eval, we must sanitize the query
-                                // TODO: report this as an issue
+                                // https://github.com/typesense/typesense/issues/2435
+                                // apparently, backtick does not work inside _eval(). since additional parentheses
+                                // will destroy the _eval(), we must sanitize the query as a workaround.
                                 string ValidEvalValue(string? value)
                                     => value?.Replace("(", string.Empty).Replace(")", string.Empty) ?? string.Empty;
 

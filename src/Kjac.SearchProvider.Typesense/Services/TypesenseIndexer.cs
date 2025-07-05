@@ -5,8 +5,10 @@ using Microsoft.Extensions.Logging;
 using Typesense;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Sync;
+using Umbraco.Cms.Search.Core.Extensions;
 using Umbraco.Cms.Search.Core.Models.Indexing;
 using Umbraco.Extensions;
+using CoreConstants = Umbraco.Cms.Search.Core.Constants;
 
 namespace Kjac.SearchProvider.Typesense.Services;
 
@@ -287,9 +289,11 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
             return;
         }
 
-        // TODO: implement
         var validIndexAlias = indexAlias.ValidIndexAlias();
-        await Task.CompletedTask;
+        await _typesenseClient.DeleteDocuments(
+            validIndexAlias,
+            $"{FieldName(CoreConstants.FieldNames.PathIds, IndexConstants.FieldTypePostfix.Keywords)}:[{string.Join(",", ids.Select(id => $"`{id.AsKeyword()}`"))}]"
+        );
     }
 
     public async Task ResetAsync(string indexAlias)
