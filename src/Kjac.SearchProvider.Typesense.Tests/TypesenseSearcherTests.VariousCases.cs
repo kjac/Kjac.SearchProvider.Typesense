@@ -429,4 +429,37 @@ public partial class TypesenseSearcherTests
         Assert.That(facetValues, Has.Length.EqualTo(1));
         Assert.That(facetValues.First().Count, Is.EqualTo(10));
     }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task CanPaginate(bool ascending)
+    {
+        // expected: all documents sorted by "even"/"odd", subsequently by integer value
+        var expectedSortOrder = OddOrEvenIds(true).Union(OddOrEvenIds(false)).ToArray();
+        if (ascending is false)
+        {
+            expectedSortOrder = expectedSortOrder.Reverse().ToArray();
+        }
+
+        for (var i = 0; i < 10; i++)
+        {
+            SearchResult result = await SearchAsync(
+                sorters:
+                [
+                    new KeywordSorter(FieldMultiSorting, ascending ? Direction.Ascending : Direction.Descending),
+                    new IntegerSorter(FieldSingleValue, ascending ? Direction.Ascending : Direction.Descending)
+                ],
+                skip: i * 10,
+                take: 10
+            );
+
+            Assert.That(result.Total, Is.EqualTo(100));
+            Assert.That(result.Documents.Count(), Is.EqualTo(10));
+
+            Document[] documents = result.Documents.ToArray();
+            Guid[] documentIds = documents.Select(x => x.Id).ToArray();
+            Guid[] expectedDocumentIds = expectedSortOrder.Skip(i * 10).Take(10).Select(id => _documentIds[id]).ToArray();
+            Assert.That(documentIds, Is.EqualTo(expectedDocumentIds).AsCollection);
+        }
+    }
 }
