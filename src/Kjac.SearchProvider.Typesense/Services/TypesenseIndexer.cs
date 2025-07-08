@@ -15,15 +15,18 @@ namespace Kjac.SearchProvider.Typesense.Services;
 internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITypesenseIndexer
 {
     private readonly ITypesenseClient _typesenseClient;
+    private readonly ITypesenseIndexManager _indexManager;
     private readonly ILogger<TypesenseIndexer> _logger;
 
     public TypesenseIndexer(
         IServerRoleAccessor serverRoleAccessor,
         ITypesenseClient typesenseClient,
+        ITypesenseIndexManager indexManager,
         ILogger<TypesenseIndexer> logger)
         : base(serverRoleAccessor)
     {
         _typesenseClient = typesenseClient;
+        _indexManager = indexManager;
         _logger = logger;
     }
 
@@ -297,26 +300,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
     }
 
     public async Task ResetAsync(string indexAlias)
-    {
-        if (ShouldNotManipulateIndexes())
-        {
-            return;
-        }
-
-        var validIndexAlias = indexAlias.ValidIndexAlias();
-        try
-        {
-            await _typesenseClient.DeleteCollection(validIndexAlias);
-        }
-        catch (TypesenseApiNotFoundException)
-        {
-            // the index does not exist
-        }
-        catch (TypesenseApiException ex)
-        {
-            _logger.LogError(ex, "Index {indexAlias} could not be deleted.", indexAlias);
-        }
-    }
+        => await _indexManager.ResetAsync(indexAlias);
 
     private record IndexDocument
     {

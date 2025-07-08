@@ -17,13 +17,25 @@ public class TypesenseIndexerTests : TypesenseTestBase
     protected override async Task PerformOneTimeSetUpAsync()
         => await Indexer.ResetAsync(IndexAlias);
 
-    // protected override async Task PerformOneTimeTearDownAsync()
-    //     => await Indexer.ResetAsync(IndexAlias);
+    protected override async Task PerformOneTimeTearDownAsync()
+        => await Indexer.ResetAsync(IndexAlias);
 
     [Test]
     public async Task CanCreateAndResetIndex()
     {
         await IndexManager.EnsureAsync(IndexAlias);
+        Dictionary<string, Guid> ids = await CreateIndexStructure();
+
+        SearchResult result = await SearchAsync(
+            filters: [
+                new KeywordFilter(
+                    Umbraco.Cms.Search.Core.Constants.FieldNames.PathIds,
+                    [ids.First().Value.AsKeyword()],
+                    false
+                )
+            ]
+        );
+        Assert.That(result.Total, Is.Not.Zero);
 
         ITypesenseClient client = GetRequiredService<ITypesenseClient>();
 
@@ -32,14 +44,19 @@ public class TypesenseIndexerTests : TypesenseTestBase
 
         await Indexer.ResetAsync(IndexAlias);
 
-        try
-        {
-            await client.RetrieveCollection(IndexAlias);
-            Assert.Fail($"Expected {nameof(TypesenseApiNotFoundException)}");
-        }
-        catch (TypesenseApiNotFoundException)
-        {
-        }
+        collectionResponse = await client.RetrieveCollection(IndexAlias);
+        Assert.That(collectionResponse.Name, Is.EqualTo(IndexAlias));
+
+        result = await SearchAsync(
+            filters: [
+                new KeywordFilter(
+                    Umbraco.Cms.Search.Core.Constants.FieldNames.PathIds,
+                    [ids.First().Value.AsKeyword()],
+                    false
+                )
+            ]
+        );
+        Assert.That(result.Total, Is.Zero);
     }
 
     [Test]

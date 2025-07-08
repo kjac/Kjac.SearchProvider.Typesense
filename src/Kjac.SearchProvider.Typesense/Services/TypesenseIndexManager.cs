@@ -133,4 +133,30 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
             _logger.LogError(ex, "Index {indexAlias} could not be created.", indexAlias);
         }
     }
+
+    public async Task ResetAsync(string indexAlias)
+    {
+        if (ShouldNotManipulateIndexes())
+        {
+            return;
+        }
+
+        var validIndexAlias = indexAlias.ValidIndexAlias();
+
+        try
+        {
+            await _typesenseClient.DeleteCollection(validIndexAlias);
+        }
+        catch (TypesenseApiNotFoundException)
+        {
+            // the index does not exist
+        }
+        catch (TypesenseApiException ex)
+        {
+            _logger.LogError(ex, "Index {indexAlias} could not be deleted.", indexAlias);
+            return;
+        }
+
+        await EnsureAsync(indexAlias);
+    }
 }
