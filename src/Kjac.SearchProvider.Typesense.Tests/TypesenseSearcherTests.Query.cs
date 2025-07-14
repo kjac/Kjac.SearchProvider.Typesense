@@ -124,8 +124,8 @@ public partial class TypesenseSearcherTests
 
     [TestCase("special", true)]
     [TestCase("special", false)]
-    [TestCase("(special)", true)]
-    [TestCase("(special)", false)]
+    [TestCase("(special", true)]
+    [TestCase("(special", false)]
     public async Task CanQueryDocumentsByTextualRelevance(string query, bool ascending)
     {
         SearchResult result = await SearchAsync(

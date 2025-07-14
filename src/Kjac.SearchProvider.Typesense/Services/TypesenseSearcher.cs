@@ -139,11 +139,8 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
                             if (sorter is ScoreSorter)
                             {
-                                // https://github.com/typesense/typesense/issues/2435
-                                // apparently, backtick does not work inside _eval(). since additional parentheses
-                                // will destroy the _eval(), we must sanitize the query as a workaround.
                                 string ValidEvalValue(string? value)
-                                    => value?.Replace("(", string.Empty).Replace(")", string.Empty) ?? string.Empty;
+                                    => value ?? string.Empty;
 
                                 var queryParts = new List<string> { ValidEvalValue(effectiveQuery?.Trim("*")) };
 
@@ -165,7 +162,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
                                 if (effectiveQuery.IsNullOrWhiteSpace() is false)
                                 {
-                                    return $"_eval([({IndexConstants.FieldNames.AllTextsR1}:{effectiveQuery}*):{_searcherOptions.BoostFactorTextR1}, ({IndexConstants.FieldNames.AllTextsR2}:{effectiveQuery}*):{_searcherOptions.BoostFactorTextR2}, ({IndexConstants.FieldNames.AllTextsR3}:{effectiveQuery}*):{_searcherOptions.BoostFactorTextR3}]):{direction}";
+                                    return $"_eval([({IndexConstants.FieldNames.AllTextsR1}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR1}, ({IndexConstants.FieldNames.AllTextsR2}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR2}, ({IndexConstants.FieldNames.AllTextsR3}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR3}]):{direction}";
                                 }
                             }
 
