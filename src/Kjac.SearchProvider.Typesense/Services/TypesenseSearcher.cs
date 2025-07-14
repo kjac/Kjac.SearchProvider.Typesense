@@ -439,7 +439,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
             DecimalSorter => $"{FieldName(sorter.FieldName, IndexConstants.FieldTypePostfix.Decimals)}{IndexConstants.FieldTypePostfix.Sortable}",
             IntegerSorter => $"{FieldName(sorter.FieldName, IndexConstants.FieldTypePostfix.Integers)}{IndexConstants.FieldTypePostfix.Sortable}",
             KeywordSorter => $"{FieldName(sorter.FieldName, IndexConstants.FieldTypePostfix.Keywords)}{IndexConstants.FieldTypePostfix.Sortable}",
-            StringSorter => $"{FieldName(sorter.FieldName, IndexConstants.FieldTypePostfix.Texts)}{IndexConstants.FieldTypePostfix.Sortable}",
+            TextSorter => $"{FieldName(sorter.FieldName, IndexConstants.FieldTypePostfix.Texts)}{IndexConstants.FieldTypePostfix.Sortable}",
             ScoreSorter => "_text_match",
             _ => throw new ArgumentOutOfRangeException(
                 nameof(sorter),

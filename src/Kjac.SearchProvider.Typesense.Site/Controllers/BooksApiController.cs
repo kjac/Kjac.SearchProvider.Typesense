@@ -140,7 +140,7 @@ public class BooksApiController : ControllerBase
         Direction direction = request.SortDirection == "asc" ? Direction.Ascending : Direction.Descending;
         Sorter sorter = request.SortBy switch
         {
-            "title" => new StringSorter(SearchConstants.FieldNames.Name, direction),
+            "title" => new TextSorter(SearchConstants.FieldNames.Name, direction),
             "publishYear" => new IntegerSorter("publishYear", direction),
             _ => new ScoreSorter(direction)
         };

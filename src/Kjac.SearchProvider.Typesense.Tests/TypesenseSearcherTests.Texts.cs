@@ -166,7 +166,7 @@ public partial class TypesenseSearcherTests
     public async Task CanSortDocumentsByText(bool ascending)
     {
         SearchResult result = await SearchAsync(
-            sorters: [new StringSorter(FieldSingleValue, ascending ? Direction.Ascending : Direction.Descending)]
+            sorters: [new TextSorter(FieldSingleValue, ascending ? Direction.Ascending : Direction.Descending)]
         );
 
         Assert.Multiple(
