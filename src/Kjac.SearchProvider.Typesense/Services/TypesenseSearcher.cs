@@ -36,15 +36,15 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
     // TODO: split this method into multiple!
     public async Task<SearchResult> SearchAsync(
         string indexAlias,
-        string? query,
-        IEnumerable<Filter>? filters,
-        IEnumerable<Facet>? facets,
-        IEnumerable<Sorter>? sorters,
-        string? culture,
-        string? segment,
-        AccessContext? accessContext,
-        int skip,
-        int take)
+        string? query = null,
+        IEnumerable<Filter>? filters = null,
+        IEnumerable<Facet>? facets = null,
+        IEnumerable<Sorter>? sorters = null,
+        string? culture = null,
+        string? segment = null,
+        AccessContext? accessContext = null,
+        int skip = 0,
+        int take= 10)
     {
         if (query is null && filters is null && facets is null && sorters is null)
         {
@@ -104,12 +104,12 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 ),
                                 IntegerRangeFilter integerRangeFilter => integerRangeFilter.Ranges.Select(
                                     range
-                                        => $"{range.MinimumValue ?? int.MinValue}..{(range.MaximumValue ?? int.MaxValue) - 1}"
+                                        => $"{range.Min ?? int.MinValue}..{(range.Max ?? int.MaxValue) - 1}"
                                 ),
                                 DecimalExactFilter decimalExactFilter => decimalExactFilter.Values.Select(DecimalValue),
                                 DecimalRangeFilter decimalRangeFilter => decimalRangeFilter.Ranges.Select(
                                     range
-                                        => $"{DecimalValue(range.MinimumValue ?? decimal.MinValue)}..{DecimalValue((range.MaximumValue ?? decimal.MaxValue) - 0.01m)}"
+                                        => $"{DecimalValue(range.Min ?? decimal.MinValue)}..{DecimalValue((range.Max ?? decimal.MaxValue) - 0.01m)}"
                                 ),
                                 // Typesense expects unix timestamps for dates
                                 DateTimeOffsetExactFilter dateTimeOffsetExactFilter => dateTimeOffsetExactFilter.Values
@@ -119,7 +119,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 DateTimeOffsetRangeFilter dateTimeOffsetRangeFilter => dateTimeOffsetRangeFilter.Ranges
                                     .Select(
                                         range
-                                            => $"{(range.MinimumValue ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.MaximumValue ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
+                                            => $"{(range.Min ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.Max ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
                                     ),
                                 SystemFieldFilter systemFieldFilter => [$"`{systemFieldFilter.Value}`"],
                                 _ => throw new ArgumentOutOfRangeException(
