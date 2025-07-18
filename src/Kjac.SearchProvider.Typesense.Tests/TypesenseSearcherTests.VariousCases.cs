@@ -11,6 +11,13 @@ namespace Kjac.SearchProvider.Typesense.Tests;
 public partial class TypesenseSearcherTests
 {
     [Test]
+    public async Task SearchingWithoutParametersYieldsNoResults()
+    {
+        SearchResult result = await SearchAsync();
+        Assert.That(result.Total, Is.Zero);
+    }
+
+    [Test]
     public async Task FilteringWithoutFacetsYieldsNoFacetValues()
     {
         SearchResult result = await SearchAsync(

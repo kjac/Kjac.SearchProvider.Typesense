@@ -46,6 +46,11 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
         int skip,
         int take)
     {
+        if (query is null && filters is null && facets is null && sorters is null)
+        {
+            return new SearchResult(0, [], []);
+        }
+
         PaginationHelper.ConvertSkipTakeToPaging(skip, take, out var pageNumber, out var pageSize);
         // Typesense paging is 1 based
         pageNumber++;
