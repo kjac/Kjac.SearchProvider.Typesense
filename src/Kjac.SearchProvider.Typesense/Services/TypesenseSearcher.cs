@@ -104,12 +104,12 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 ),
                                 IntegerRangeFilter integerRangeFilter => integerRangeFilter.Ranges.Select(
                                     range
-                                        => $"{range.Min ?? int.MinValue}..{(range.Max ?? int.MaxValue) - 1}"
+                                        => $"{range.MinValue ?? int.MinValue}..{(range.MaxValue ?? int.MaxValue) - 1}"
                                 ),
                                 DecimalExactFilter decimalExactFilter => decimalExactFilter.Values.Select(DecimalValue),
                                 DecimalRangeFilter decimalRangeFilter => decimalRangeFilter.Ranges.Select(
                                     range
-                                        => $"{DecimalValue(range.Min ?? decimal.MinValue)}..{DecimalValue((range.Max ?? decimal.MaxValue) - 0.01m)}"
+                                        => $"{DecimalValue(range.MinValue ?? decimal.MinValue)}..{DecimalValue((range.MaxValue ?? decimal.MaxValue) - 0.01m)}"
                                 ),
                                 // Typesense expects unix timestamps for dates
                                 DateTimeOffsetExactFilter dateTimeOffsetExactFilter => dateTimeOffsetExactFilter.Values
@@ -119,7 +119,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 DateTimeOffsetRangeFilter dateTimeOffsetRangeFilter => dateTimeOffsetRangeFilter.Ranges
                                     .Select(
                                         range
-                                            => $"{(range.Min ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.Max ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
+                                            => $"{(range.MinValue ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.MaxValue ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
                                     ),
                                 SystemFieldFilter systemFieldFilter => [$"`{systemFieldFilter.Value}`"],
                                 _ => throw new ArgumentOutOfRangeException(
@@ -222,12 +222,12 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 IntegerExactFacet or DecimalExactFacet or DateTimeOffsetExactFacet or KeywordFacet
                                     => FieldName(facet),
                                 IntegerRangeFacet { Ranges.Length: > 0 } integerRangeFacet
-                                    => $"{FieldName(facet)}({string.Join(",", integerRangeFacet.Ranges.Select(range => $"{range.Key}:[{range.Min},{range.Max}]"))})",
+                                    => $"{FieldName(facet)}({string.Join(",", integerRangeFacet.Ranges.Select(range => $"{range.Key}:[{range.MinValue},{range.MaxValue}]"))})",
                                 DecimalRangeFacet { Ranges.Length: > 0 } decimalRangeFacet
-                                    => $"{FieldName(facet)}({string.Join(",", decimalRangeFacet.Ranges.Select(range => $"{range.Key}:[{DecimalValue(range.Min)},{DecimalValue(range.Max)}]"))})",
+                                    => $"{FieldName(facet)}({string.Join(",", decimalRangeFacet.Ranges.Select(range => $"{range.Key}:[{DecimalValue(range.MinValue)},{DecimalValue(range.MaxValue)}]"))})",
                                 DateTimeOffsetRangeFacet { Ranges.Length: > 0 } dateTimeOffsetRangeFacet
                                     =>
-                                    $"{FieldName(facet)}({string.Join(",", dateTimeOffsetRangeFacet.Ranges.Select(range => $"{range.Key}:[{range.Min?.ToUnixTimeSeconds()},{range.Max?.ToUnixTimeSeconds()}]"))})",
+                                    $"{FieldName(facet)}({string.Join(",", dateTimeOffsetRangeFacet.Ranges.Select(range => $"{range.Key}:[{range.MinValue?.ToUnixTimeSeconds()},{range.MaxValue?.ToUnixTimeSeconds()}]"))})",
                                 _ => throw new ArgumentOutOfRangeException(
                                     nameof(facet),
                                     $"Encountered an unsupported facet type: {facet.GetType().Name}"
@@ -345,8 +345,8 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 integerRangeFacet.Ranges.Select(
                                     range => new IntegerRangeFacetValue(
                                         range.Key,
-                                        range.Min,
-                                        range.Max,
+                                        range.MinValue,
+                                        range.MaxValue,
                                         facetCount.Counts.FirstOrDefault(count => count.Value == range.Key)?.Count ?? 0
                                     )
                                 )
@@ -356,8 +356,8 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 decimalRangeFacet.Ranges.Select(
                                     range => new DecimalRangeFacetValue(
                                         range.Key,
-                                        range.Min,
-                                        range.Max,
+                                        range.MinValue,
+                                        range.MaxValue,
                                         facetCount.Counts.FirstOrDefault(count => count.Value == range.Key)?.Count ?? 0
                                     )
                                 )
@@ -367,8 +367,8 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                 dateTimeOffsetRangeFacet.Ranges.Select(
                                     range => new DateTimeOffsetRangeFacetValue(
                                         range.Key,
-                                        range.Min,
-                                        range.Max,
+                                        range.MinValue,
+                                        range.MaxValue,
                                         facetCount.Counts.FirstOrDefault(count => count.Value == range.Key)?.Count ?? 0
                                     )
                                 )

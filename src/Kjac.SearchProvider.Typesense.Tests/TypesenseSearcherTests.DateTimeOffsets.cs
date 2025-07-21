@@ -34,7 +34,7 @@ public partial class TypesenseSearcherTests
             [
                 new DateTimeOffsetRangeFilter(
                     FieldMultipleValues,
-                    [new FilterRange<DateTimeOffset?>(StartDate().AddDays(1), StartDate().AddDays(2))],
+                    [new DateTimeOffsetRangeFilterRange(StartDate().AddDays(1), StartDate().AddDays(2))],
                     false
                 )
             ]
@@ -92,9 +92,9 @@ public partial class TypesenseSearcherTests
                 new DateTimeOffsetRangeFilter(
                     FieldMultipleValues,
                     [
-                        new FilterRange<DateTimeOffset?>(StartDate().AddDays(1), StartDate().AddDays(5)),
-                        new FilterRange<DateTimeOffset?>(StartDate().AddDays(20), StartDate().AddDays(25)),
-                        new FilterRange<DateTimeOffset?>(StartDate().AddDays(100), StartDate().AddDays(101))
+                        new DateTimeOffsetRangeFilterRange(StartDate().AddDays(1), StartDate().AddDays(5)),
+                        new DateTimeOffsetRangeFilterRange(StartDate().AddDays(20), StartDate().AddDays(25)),
+                        new DateTimeOffsetRangeFilterRange(StartDate().AddDays(100), StartDate().AddDays(101))
                     ],
                     false
                 )
@@ -161,7 +161,7 @@ public partial class TypesenseSearcherTests
             [
                 new DateTimeOffsetRangeFilter(
                     FieldMultipleValues,
-                    [new FilterRange<DateTimeOffset?>(StartDate().AddDays(1), StartDate().AddDays(2))],
+                    [new DateTimeOffsetRangeFilterRange(StartDate().AddDays(1), StartDate().AddDays(2))],
                     true
                 )
             ]

@@ -96,7 +96,7 @@ public class BooksApiController : ControllerBase
             false
         );
 
-        FilterRange<int?>[] publishYearFilters =
+        IntegerRangeFilterRange[] publishYearFilters =
             (request.PublishYear ?? []).Select(ParseIntegerRangeFilter).WhereNotNull().ToArray();
         if (publishYearFilters.Length is not 0)
         {
@@ -148,7 +148,7 @@ public class BooksApiController : ControllerBase
         return [sorter];
     }
 
-    private static FilterRange<int?>? ParseIntegerRangeFilter(string? filter)
+    private static IntegerRangeFilterRange? ParseIntegerRangeFilter(string? filter)
     {
         var values = filter?
             .Split(',')
@@ -159,7 +159,7 @@ public class BooksApiController : ControllerBase
             ).ToArray();
 
         return values?.Length is 2
-            ? new FilterRange<int?>(values[0], values[1])
+            ? new IntegerRangeFilterRange(values[0], values[1])
             : null;
     }
 }
