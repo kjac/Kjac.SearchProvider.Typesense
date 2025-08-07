@@ -46,6 +46,22 @@ You'll need to configure the search provider, so it can connect to your Typesens
 }
 ```
 
+### Hosting multiple environments on a single Typesense engine
+
+You can use an `Environment` discriminator to host multiple environments on the same Typesense engine. In essence, this creates environment specific indexes by post-fixing the value of `Environment` to each index alias.
+
+This is also configured via `appsettings.json`:
+
+```json
+{
+  "TypesenseSearchProvider": {
+    "Client": {
+      "Environment": "[your environment alias ('dev', 'test' etc.)]"
+    }
+  }
+}
+```
+
 ## Extendability
 
 Generally, you should look to Umbraco search for extension points. There are however a few notable extension points in this search provider as well.
