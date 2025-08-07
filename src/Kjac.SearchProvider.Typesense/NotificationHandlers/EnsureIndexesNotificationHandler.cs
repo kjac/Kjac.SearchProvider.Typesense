@@ -32,13 +32,13 @@ internal sealed class EnsureIndexesNotificationHandler
     {
         Type implicitIndexServiceType = typeof(IIndexer);
         Type defaultIndexServiceType = _serviceProvider.GetRequiredService<IIndexer>().GetType();
-        Type elasticIndexServiceType = typeof(ITypesenseIndexer);
+        Type typesenseIndexerServiceType = typeof(ITypesenseIndexer);
 
         foreach (IndexRegistration indexRegistration in _indexOptions.GetIndexRegistrations())
         {
-            var shouldEnsureIndex = indexRegistration.Indexer == elasticIndexServiceType
+            var shouldEnsureIndex = indexRegistration.Indexer == typesenseIndexerServiceType
                                     || (indexRegistration.Indexer == implicitIndexServiceType &&
-                                        defaultIndexServiceType == elasticIndexServiceType);
+                                        defaultIndexServiceType == typesenseIndexerServiceType);
 
             if (shouldEnsureIndex)
             {
