@@ -16,17 +16,20 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
 {
     private readonly ITypesenseClient _typesenseClient;
     private readonly ITypesenseIndexManager _indexManager;
+    private readonly IIndexAliasResolver _indexAliasResolver;
     private readonly ILogger<TypesenseIndexer> _logger;
 
     public TypesenseIndexer(
         IServerRoleAccessor serverRoleAccessor,
         ITypesenseClient typesenseClient,
         ITypesenseIndexManager indexManager,
+        IIndexAliasResolver indexAliasResolver,
         ILogger<TypesenseIndexer> logger)
         : base(serverRoleAccessor)
     {
         _typesenseClient = typesenseClient;
         _indexManager = indexManager;
+        _indexAliasResolver = indexAliasResolver;
         _logger = logger;
     }
 
@@ -264,7 +267,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
         try
         {
             List<ImportResponse> importDocumentResults = await _typesenseClient.ImportDocuments(
-                indexAlias.ValidIndexAlias(),
+                 _indexAliasResolver.Resolve(indexAlias),
                 documents,
                 importType: ImportType.Upsert
             );
@@ -292,9 +295,8 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
             return;
         }
 
-        var validIndexAlias = indexAlias.ValidIndexAlias();
         await _typesenseClient.DeleteDocuments(
-            validIndexAlias,
+            _indexAliasResolver.Resolve(indexAlias),
             $"{FieldName(CoreConstants.FieldNames.PathIds, IndexConstants.FieldTypePostfix.Keywords)}:[{string.Join(",", ids.Select(id => $"`{id.AsKeyword()}`"))}]"
         );
     }

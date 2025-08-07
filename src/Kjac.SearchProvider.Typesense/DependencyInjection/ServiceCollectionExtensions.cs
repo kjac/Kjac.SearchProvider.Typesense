@@ -21,6 +21,7 @@ internal static class ServiceCollectionExtensions
 
         // register supporting services
         services.AddSingleton<ITypesenseIndexManager, TypesenseIndexManager>();
+        services.AddSingleton<IIndexAliasResolver, IndexAliasResolver>();
 
         var clientOptions = new ClientOptions();
         IConfigurationSection clientConfiguration = configuration.GetSection("TypesenseSearchProvider:Client");

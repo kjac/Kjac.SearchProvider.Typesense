@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using Kjac.SearchProvider.Typesense.Configuration;
 using Kjac.SearchProvider.Typesense.Constants;
-using Kjac.SearchProvider.Typesense.Extensions;
 using Kjac.SearchProvider.Typesense.Models.Searching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,14 +20,17 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 {
     private readonly ITypesenseClient _typesenseClient;
     private readonly SearcherOptions _searcherOptions;
+    private readonly IIndexAliasResolver _indexAliasResolver;
     private readonly ILogger<TypesenseSearcher> _logger;
 
     public TypesenseSearcher(
         ITypesenseClient typesenseClient,
         IOptions<SearcherOptions> options,
+        IIndexAliasResolver indexAliasResolver,
         ILogger<TypesenseSearcher> logger)
     {
         _typesenseClient = typesenseClient;
+        _indexAliasResolver = indexAliasResolver;
         _searcherOptions = options.Value;
         _logger = logger;
     }
@@ -189,7 +191,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                 string? facetBy,
                 bool includeDocuments)
                 => new(
-                    indexAlias.ValidIndexAlias(),
+                     _indexAliasResolver.Resolve(indexAlias),
                     query,
                     $"{IndexConstants.FieldNames.AllTextsR1},{IndexConstants.FieldNames.AllTextsR2},{IndexConstants.FieldNames.AllTextsR3},{IndexConstants.FieldNames.AllTexts}")
                 {

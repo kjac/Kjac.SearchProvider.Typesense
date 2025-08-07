@@ -110,7 +110,7 @@ public partial class TypesenseSearcherTests : TypesenseTestBase
     }
 
     protected override async Task PerformOneTimeTearDownAsync()
-        => await DeleteIndex();
+        => await DeleteIndex(IndexAlias);
 
     private async Task<SearchResult> SearchAsync(
         string? query = null,
@@ -143,13 +143,10 @@ public partial class TypesenseSearcherTests : TypesenseTestBase
 
     private async Task EnsureIndex()
     {
-        await DeleteIndex();
+        await DeleteIndex(IndexAlias);
 
         await GetRequiredService<ITypesenseIndexManager>().EnsureAsync(IndexAlias);
     }
-
-    private async Task DeleteIndex()
-        => await GetRequiredService<ITypesenseIndexer>().ResetAsync(IndexAlias);
 
     private DateTimeOffset StartDate()
         => Date(2025, 01, 01);

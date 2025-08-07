@@ -1,6 +1,5 @@
 ﻿using Kjac.SearchProvider.Typesense.Configuration;
 using Kjac.SearchProvider.Typesense.Constants;
-using Kjac.SearchProvider.Typesense.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Typesense;
@@ -9,22 +8,24 @@ using CoreConstants = Umbraco.Cms.Search.Core.Constants;
 
 namespace Kjac.SearchProvider.Typesense.Services;
 
-// TODO: need to support environments? perhaps an option to prefix indexes with an environment identifier?
 internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase, ITypesenseIndexManager
 {
     private readonly ITypesenseClient _typesenseClient;
     private readonly IndexerOptions _indexerOptions;
+    private readonly IIndexAliasResolver _indexAliasResolver;
     private readonly ILogger<TypesenseIndexManager> _logger;
 
     public TypesenseIndexManager(
         IServerRoleAccessor serverRoleAccessor,
         ITypesenseClient typesenseClient,
         IOptions<IndexerOptions> options,
+        IIndexAliasResolver indexAliasResolver,
         ILogger<TypesenseIndexManager> logger)
         : base(serverRoleAccessor)
     {
         _typesenseClient = typesenseClient;
         _indexerOptions = options.Value;
+        _indexAliasResolver = indexAliasResolver;
         _logger = logger;
     }
 
@@ -35,7 +36,7 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
             return;
         }
 
-        indexAlias = indexAlias.ValidIndexAlias();
+        indexAlias = _indexAliasResolver.Resolve(indexAlias);
         try
         {
             await _typesenseClient.RetrieveCollection(indexAlias);
@@ -141,11 +142,11 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
             return;
         }
 
-        var validIndexAlias = indexAlias.ValidIndexAlias();
+        indexAlias = _indexAliasResolver.Resolve(indexAlias);
 
         try
         {
-            await _typesenseClient.DeleteCollection(validIndexAlias);
+            await _typesenseClient.DeleteCollection(indexAlias);
         }
         catch (TypesenseApiNotFoundException)
         {

@@ -2,6 +2,7 @@
 using Kjac.SearchProvider.Typesense.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Typesense;
 using Umbraco.Cms.Core.Sync;
 
 namespace Kjac.SearchProvider.Typesense.Tests;
@@ -32,6 +33,8 @@ public abstract class TypesenseTestBase
 
         serviceCollection.AddSingleton<IServerRoleAccessor, SingleServerRoleAccessor>();
 
+        PerformAdditionalConfiguration(serviceCollection);
+
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
         await PerformOneTimeSetUpAsync();
@@ -49,6 +52,10 @@ public abstract class TypesenseTestBase
         }
     }
 
+    protected virtual void PerformAdditionalConfiguration(ServiceCollection serviceCollection)
+    {
+    }
+
     protected virtual Task PerformOneTimeSetUpAsync()
         => Task.CompletedTask;
 
@@ -57,4 +64,16 @@ public abstract class TypesenseTestBase
 
     protected T GetRequiredService<T>() where T : notnull
         => _serviceProvider.GetRequiredService<T>();
+
+    protected async Task DeleteIndex(string indexAlias)
+    {
+        try
+        {
+            await GetRequiredService<ITypesenseClient>().DeleteCollection(indexAlias);
+        }
+        catch (TypesenseApiNotFoundException)
+        {
+            // the index does not exist
+        }
+    }
 }
