@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Typesense" Version="7.34.1"/>
-    <PackageReference Include="Umbraco.Cms.Search.Core" Version="0.2.5" />
+    <PackageReference Include="Umbraco.Cms.Search.Core" Version="0.0.10-rc" />
   </ItemGroup>
 
   <ItemGroup>
