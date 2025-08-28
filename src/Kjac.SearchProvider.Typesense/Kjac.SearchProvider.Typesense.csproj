@@ -4,11 +4,12 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.0.0-alpha.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Typesense" Version="7.34.1"/>
-    <PackageReference Include="Umbraco.Cms.Search.Core" Version="0.0.10-rc" />
+    <PackageReference Include="Umbraco.Cms.Search.Core" Version="1.0.0-alpha.1" />
   </ItemGroup>
 
   <ItemGroup>
