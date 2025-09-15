@@ -62,16 +62,40 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                 // relevant field values for this variation (including invariant fields)
                 IndexField[] variationFields = fieldsByFieldName.Select(
                         g =>
-                            g.FirstOrDefault(f => f.Culture == variation.Culture && f.Segment == variation.Segment)
-                            ?? g.FirstOrDefault(f => variation.Culture is not null
-                                                     && f.Culture == variation.Culture
-                                                     && f.Segment is null
-                            )
-                            ?? g.FirstOrDefault(f => variation.Segment is not null
-                                                     && f.Culture is null
-                                                     && f.Segment == variation.Segment
-                            )
-                            ?? g.FirstOrDefault(f => f.Culture is null && f.Segment is null)
+                        {
+                            IndexField[] applicableFields = g.Where(f =>
+                                (variation.Culture is not null
+                                 && variation.Segment is not null
+                                 && f.Culture == variation.Culture
+                                 && f.Segment == variation.Segment)
+                                || (variation.Culture is not null
+                                    && f.Culture == variation.Culture
+                                    && f.Segment is null)
+                                || (variation.Segment is not null
+                                    && f.Culture is null
+                                    && f.Segment == variation.Segment)
+                                || (f.Culture is null && f.Segment is null)
+                            ).ToArray();
+
+                            return applicableFields.Any()
+                                ? new IndexField(
+                                    g.Key,
+                                    new IndexValue
+                                    {
+                                        DateTimeOffsets = applicableFields.SelectMany(f => f.Value.DateTimeOffsets ?? []).NullIfEmpty(),
+                                        Decimals = applicableFields.SelectMany(f => f.Value.Decimals ?? []).NullIfEmpty(),
+                                        Integers = applicableFields.SelectMany(f => f.Value.Integers ?? []).NullIfEmpty(),
+                                        Keywords = applicableFields.SelectMany(f => f.Value.Keywords ?? []).NullIfEmpty(),
+                                        Texts = applicableFields.SelectMany(f => f.Value.Texts ?? []).NullIfEmpty(),
+                                        TextsR1 = applicableFields.SelectMany(f => f.Value.TextsR1 ?? []).NullIfEmpty(),
+                                        TextsR2 = applicableFields.SelectMany(f => f.Value.TextsR2 ?? []).NullIfEmpty(),
+                                        TextsR3 = applicableFields.SelectMany(f => f.Value.TextsR3 ?? []).NullIfEmpty(),
+                                    },
+                                    variation.Culture,
+                                    variation.Segment
+                                )
+                                : null;
+                        }
                     )
                     .WhereNotNull()
                     .ToArray();
@@ -99,31 +123,40 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                     .SelectMany(
                         field =>
                         {
-                            // apparently, it is not possible to negate on a non-existing field, and we need to be able
-                            // to negate on all text relevance levels, so there must be something indexed - will just
-                            // index a "#" for now, that seems to work.
-                            // TODO: report this as an issue
+                            // it is not possible to negate on a non-existing field, and we need to be able to negate
+                            // on all textual relevance levels... so if one textual relevance field has a value, we
+                            // must ensure that all textual relevance fields exist - even if that means indexing empty.
+                            var defaultTextualRelevanceFieldValue = field.Value.Texts?.Any() is true
+                                                                    || field.Value.TextsR1?.Any() is true
+                                                                    || field.Value.TextsR2?.Any() is true
+                                                                    || field.Value.TextsR3?.Any() is true
+                                ? Array.Empty<object>()
+                                : null;
+
+                            object[]? TextualRelevanceFieldValue(IEnumerable<string>? value)
+                                => value?.NullIfEmpty()?.OfType<object>().ToArray() ?? defaultTextualRelevanceFieldValue;
+
                             return new (string FieldName, string Postfix, object[]? Values)[]
                             {
                                 (
                                     field.FieldName,
                                     IndexConstants.FieldTypePostfix.Texts,
-                                    field.Value.Texts?.OfType<object>().ToArray() ?? ["#"]
+                                    TextualRelevanceFieldValue(field.Value.Texts)
                                 ),
                                 (
                                     field.FieldName,
                                     IndexConstants.FieldTypePostfix.TextsR1,
-                                    field.Value.TextsR1?.OfType<object>().ToArray() ?? ["#"]
+                                    TextualRelevanceFieldValue(field.Value.TextsR1)
                                 ),
                                 (
                                     field.FieldName,
                                     IndexConstants.FieldTypePostfix.TextsR2,
-                                    field.Value.TextsR2?.OfType<object>().ToArray() ?? ["#"]
+                                    TextualRelevanceFieldValue(field.Value.TextsR2)
                                 ),
                                 (
                                     field.FieldName,
                                     IndexConstants.FieldTypePostfix.TextsR3,
-                                    field.Value.TextsR3?.OfType<object>().ToArray() ?? ["#"]
+                                    TextualRelevanceFieldValue(field.Value.TextsR3)
                                 ),
                                 (
                                     field.FieldName,
@@ -152,7 +185,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                             };
                         }
                     )
-                    .Where(f => f.Values?.Any() is true)
+                    .Where(f => f.Values is not null)
                     .ToDictionary(f => FieldName(f.FieldName, f.Postfix), object (f) => f.Values!);
 
                 // add explicit fields for range facets
@@ -202,7 +235,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                         );
                     }
 
-                    if (field.Value.TextsR1?.Any() is true)
+                    if (field.Value.TextsR1 is not null)
                     {
                         fieldValues.Add(
                             FieldName(
@@ -213,7 +246,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                         );
                     }
 
-                    if (field.Value.TextsR2?.Any() is true)
+                    if (field.Value.TextsR2 is not null)
                     {
                         fieldValues.Add(
                             FieldName(
@@ -224,7 +257,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                         );
                     }
 
-                    if (field.Value.TextsR3?.Any() is true)
+                    if (field.Value.TextsR3 is not null)
                     {
                         fieldValues.Add(
                             FieldName(
@@ -235,7 +268,7 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                         );
                     }
 
-                    if (field.Value.Texts?.Any() is true)
+                    if (field.Value.Texts is not null)
                     {
                         fieldValues.Add(
                             FieldName(

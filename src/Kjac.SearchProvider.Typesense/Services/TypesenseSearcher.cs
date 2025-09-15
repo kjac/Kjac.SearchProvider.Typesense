@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Kjac.SearchProvider.Typesense.Configuration;
 using Kjac.SearchProvider.Typesense.Constants;
+using Kjac.SearchProvider.Typesense.Extensions;
 using Kjac.SearchProvider.Typesense.Models.Searching;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -59,12 +60,9 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
         Filter[] filtersAsArray = filters as Filter[] ?? filters?.ToArray() ?? [];
 
-        if (culture is not null)
-        {
-            filtersAsArray = new Filter[] { new SystemFieldFilter(IndexConstants.FieldNames.Culture, culture, false) }
-                .Union(filtersAsArray)
-                .ToArray();
-        }
+        filtersAsArray = new Filter[] { new SystemFieldFilter(IndexConstants.FieldNames.Culture, culture.IndexCulture(), false) }
+            .Union(filtersAsArray)
+            .ToArray();
 
         // explicitly ignore duplicate facets
         Facet[] facetsAsArray = facets as Facet[] ?? facets?

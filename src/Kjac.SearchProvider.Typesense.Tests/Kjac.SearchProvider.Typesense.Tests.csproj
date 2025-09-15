@@ -55,6 +55,15 @@
       <Compile Update="TypesenseSearcherTests.VariousCases.cs">
         <DependentUpon>TypesenseSearcherTests.cs</DependentUpon>
       </Compile>
+      <Compile Update="TypesenseSearcherVarianceTests.Invariance.cs">
+        <DependentUpon>TypesenseSearcherVarianceTests.cs</DependentUpon>
+      </Compile>
+      <Compile Update="TypesenseSearcherVarianceTests.CultureVariance.cs">
+        <DependentUpon>TypesenseSearcherVarianceTests.cs</DependentUpon>
+      </Compile>
+      <Compile Update="TypesenseSearcherVarianceTests.MixedVariance.cs">
+        <DependentUpon>TypesenseSearcherVarianceTests.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>
