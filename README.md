@@ -1,6 +1,6 @@
 # Umbraco search provider for Typesense
 
-This repo contains an alternative search provider for [Umbraco search](https://TODO), based on [Typesense](https://typesense.org/).
+This repo contains an alternative search provider for [Umbraco search](https://github.com/umbraco/Umbraco.Cms.Search/), based on [Typesense](https://typesense.org/).
 
 ## Prerequisites
 
@@ -68,8 +68,6 @@ Generally, you should look to Umbraco search for extension points. There are how
 
 ### Tweaking score boosting for textual relevance
 
-TODO: VERIFY DEFAULTS
-
 Umbraco search allows for multiple textual relevance options within a single field. You can change the boost factors of the search provider by configuring the [`SearcherOptions`](https://github.com/kjac/Kjac.SearchProvider.Typesense/blob/main/src/Kjac.SearchProvider.Typesense/Configuration/SearcherOptions.cs):
 
 ```csharp
@@ -85,8 +83,6 @@ builder.Services.Configure<SearcherOptions>(options =>
 ```
 
 ### Allowing for more facet values
-
-TODO: VERIFY DEFAULTS
 
 By default, the search provider allows for a maximum of 100 facet values returned per facet in a search result. You can change that - also using `SearcherOptions`:
 
@@ -112,4 +108,4 @@ If you're submitting a PR, please:
 1. Also include plenty of context and steps to reproduce.
 2. Make sure your code follows the provided editor configuration.
 3. If at all possible, create tests that prove the issue has been fixed.
-   - You'll find instructions on running the tests [here](https://TODO).
+   - You'll find instructions on running the tests [here](https://github.com/kjac/Kjac.SearchProvider.Typesense/tree/main/src/Kjac.SearchProvider.Typesense.Tests).
