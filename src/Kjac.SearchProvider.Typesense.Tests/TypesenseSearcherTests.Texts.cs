@@ -177,4 +177,38 @@ public partial class TypesenseSearcherTests
             }
         );
     }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task CanSortDocumentsByTextualRelevance(bool ascending)
+    {
+        SearchResult result = await SearchAsync(
+            filters: [new TextFilter(FieldTextRelevance, ["special"], false)],
+            sorters: [new TextSorter(FieldMultiSorting, ascending ? Direction.Ascending : Direction.Descending)]
+        );
+
+        Assert.That(result.Total, Is.EqualTo(4));
+
+        Assert.Multiple(
+            () =>
+            {
+                Guid[] expectedDocumentIdsByOrderOfRelevance =
+                [
+                    _documentIds[10], // TextsR1 ("sortable_a")
+                    _documentIds[20], // TextsR2 ("sortable_b")
+                    _documentIds[30], // TextsR3 ("sortable_c")
+                    _documentIds[40] // Texts ("sortable_d")
+                ];
+                if (ascending is false)
+                {
+                    expectedDocumentIdsByOrderOfRelevance = expectedDocumentIdsByOrderOfRelevance.Reverse().ToArray();
+                }
+
+                Assert.That(
+                    result.Documents.Select(d => d.Id),
+                    Is.EqualTo(expectedDocumentIdsByOrderOfRelevance).AsCollection
+                );
+            }
+        );
+    }
 }

@@ -126,11 +126,11 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                             // it is not possible to negate on a non-existing field, and we need to be able to negate
                             // on all textual relevance levels... so if one textual relevance field has a value, we
                             // must ensure that all textual relevance fields exist - even if that means indexing empty.
-                            var defaultTextualRelevanceFieldValue = field.Value.Texts?.Any() is true
-                                                                    || field.Value.TextsR1?.Any() is true
-                                                                    || field.Value.TextsR2?.Any() is true
-                                                                    || field.Value.TextsR3?.Any() is true
-                                ? Array.Empty<object>()
+                            object[]? defaultTextualRelevanceFieldValue = field.Value.Texts?.Any() is true
+                                                                          || field.Value.TextsR1?.Any() is true
+                                                                          || field.Value.TextsR2?.Any() is true
+                                                                          || field.Value.TextsR3?.Any() is true
+                                ? []
                                 : null;
 
                             object[]? TextualRelevanceFieldValue(IEnumerable<string>? value)
@@ -235,47 +235,20 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                         );
                     }
 
-                    if (field.Value.TextsR1 is not null)
-                    {
-                        fieldValues.Add(
-                            FieldName(
-                                field.FieldName,
-                                $"{IndexConstants.FieldTypePostfix.TextsR1}{IndexConstants.FieldTypePostfix.Sortable}"
-                            ),
-                            field.Value.TextsR1.First()
-                        );
-                    }
-
-                    if (field.Value.TextsR2 is not null)
-                    {
-                        fieldValues.Add(
-                            FieldName(
-                                field.FieldName,
-                                $"{IndexConstants.FieldTypePostfix.TextsR2}{IndexConstants.FieldTypePostfix.Sortable}"
-                            ),
-                            field.Value.TextsR2.First()
-                        );
-                    }
-
-                    if (field.Value.TextsR3 is not null)
-                    {
-                        fieldValues.Add(
-                            FieldName(
-                                field.FieldName,
-                                $"{IndexConstants.FieldTypePostfix.TextsR3}{IndexConstants.FieldTypePostfix.Sortable}"
-                            ),
-                            field.Value.TextsR3.First()
-                        );
-                    }
-
-                    if (field.Value.Texts is not null)
+                    // textual sorting is only ever performed for FieldTypePostfix.Texts - calculate appropriate sorting here from all textual relevance fields
+                    var sortableTexts = (field.Value.TextsR1 ?? [])
+                        .Union(field.Value.TextsR2 ?? [])
+                        .Union(field.Value.TextsR3 ?? [])
+                        .Union(field.Value.Texts ?? [])
+                        .Take(5).ToArray();
+                    if (sortableTexts.Length > 0)
                     {
                         fieldValues.Add(
                             FieldName(
                                 field.FieldName,
                                 $"{IndexConstants.FieldTypePostfix.Texts}{IndexConstants.FieldTypePostfix.Sortable}"
                             ),
-                            field.Value.Texts.First()
+                            string.Join(" ", sortableTexts).ToLowerInvariant()
                         );
                     }
                 }

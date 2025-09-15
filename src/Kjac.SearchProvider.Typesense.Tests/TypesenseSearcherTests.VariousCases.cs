@@ -469,4 +469,46 @@ public partial class TypesenseSearcherTests
             Assert.That(documentIds, Is.EqualTo(expectedDocumentIds).AsCollection);
         }
     }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task CanSortByAllTextualRelevanceFields(bool ascending)
+    {
+        SearchResult result = await SearchAsync(
+            sorters:
+            [
+                new TextSorter(FieldTextSorting, ascending ? Direction.Ascending : Direction.Descending)
+            ]
+        );
+
+        Assert.That(result.Total, Is.EqualTo(100));
+
+        Document[] resultDocuments = result.Documents.ToArray();
+        if (ascending)
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(resultDocuments[0].Id, Is.EqualTo(_documentIds[60]));
+                Assert.That(resultDocuments[1].Id, Is.EqualTo(_documentIds[20]));
+                Assert.That(resultDocuments[2].Id, Is.EqualTo(_documentIds[40]));
+                Assert.That(
+                    resultDocuments.Skip(3).Select(d => d.Id),
+                    Is.EquivalentTo(_documentIds.Values.Except([_documentIds[20], _documentIds[40], _documentIds[60]]))
+                );
+            });
+        }
+        else
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(resultDocuments[99].Id, Is.EqualTo(_documentIds[60]));
+                Assert.That(resultDocuments[98].Id, Is.EqualTo(_documentIds[20]));
+                Assert.That(resultDocuments[97].Id, Is.EqualTo(_documentIds[40]));
+                Assert.That(
+                    resultDocuments.Take(97).Select(d => d.Id),
+                    Is.EquivalentTo(_documentIds.Values.Except([_documentIds[20], _documentIds[40], _documentIds[60]]))
+                );
+            });
+        }
+    }
 }

@@ -16,6 +16,7 @@ public partial class TypesenseSearcherTests : TypesenseTestBase
     private const string FieldSingleValue = "FieldTwo";
     private const string FieldMultiSorting = "FieldThree";
     private const string FieldTextRelevance = "FieldFour";
+    private const string FieldTextSorting = "FieldFive";
 
     private readonly Dictionary<int, Guid> _documentIds = [];
 
@@ -86,7 +87,11 @@ public partial class TypesenseSearcherTests : TypesenseTestBase
                             Decimals = [i % 2 == 0 ? 10m : 20m],
                             Integers = [i % 2 == 0 ? 10 : 20],
                             Keywords = [i % 2 == 0 ? "even" : "odd"],
-                            DateTimeOffsets = [i % 2 == 0 ? StartDate().AddDays(1) : StartDate().AddDays(2)]
+                            DateTimeOffsets = [i % 2 == 0 ? StartDate().AddDays(1) : StartDate().AddDays(2)],
+                            Texts = [i == 40 ? "sortable_d" : "sortable_x"],
+                            TextsR1 = [i == 10 ? "sortable_a" : "sortable_x"],
+                            TextsR2 = [i == 20 ? "sortable_b" : "sortable_x"],
+                            TextsR3 = [i == 30 ? "sortable_c" : "sortable_x"]
                         },
                         Culture: null,
                         Segment: null
@@ -99,6 +104,18 @@ public partial class TypesenseSearcherTests : TypesenseTestBase
                             TextsR1 = [$"texts_r1_{i}", i == 30 ? "special" : "common"],
                             TextsR2 = [$"texts_r2_{i}", i == 20 ? "special" : "common"],
                             TextsR3 = [$"texts_r3_{i}", i == 40 ? "special" : "common"]
+                        },
+                        Culture: null,
+                        Segment: null
+                    ),
+                    new IndexField(
+                        FieldTextSorting,
+                        new IndexValue
+                        {
+                            Texts = ["xxx"],
+                            TextsR1 = i == 60 ? ["aaa", "BBB", "ccc"] : null,
+                            TextsR2 = i == 20 ? ["BBB", "ccc"] : null,
+                            TextsR3 = i == 40 ? ["ccc"] : null
                         },
                         Culture: null,
                         Segment: null
