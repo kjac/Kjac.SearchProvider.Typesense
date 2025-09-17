@@ -18,7 +18,7 @@ public partial class TypesenseSearcherVarianceTests
             () =>
             {
                 Assert.That(result.Total, Is.EqualTo(1));
-                Assert.That(result.Documents.First().Id, Is.EqualTo(_documentIds[56]));
+                Assert.That(result.Documents.First().Id, Is.EqualTo(_variantDocumentIds[56]));
             }
         );
     }
@@ -78,7 +78,7 @@ public partial class TypesenseSearcherVarianceTests
             () =>
             {
                 Assert.That(result.Total, Is.EqualTo(1));
-                Assert.That(result.Documents.First().Id, Is.EqualTo(_documentIds[34]));
+                Assert.That(result.Documents.First().Id, Is.EqualTo(_variantDocumentIds[34]));
             }
         );
     }

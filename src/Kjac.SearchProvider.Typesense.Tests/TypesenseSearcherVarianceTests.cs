@@ -16,7 +16,8 @@ public partial class TypesenseSearcherVarianceTests : TypesenseTestBase
     private const string FieldCultureVariance = "FieldTwo";
     private const string FieldMixedVariance = "FieldThree";
 
-    private readonly Dictionary<int, Guid> _documentIds = [];
+    private readonly Dictionary<int, Guid> _variantDocumentIds = [];
+    private readonly Dictionary<int, Guid> _invariantDocumentIds = [];
 
     protected override async Task PerformOneTimeSetUpAsync()
     {
@@ -27,7 +28,7 @@ public partial class TypesenseSearcherVarianceTests : TypesenseTestBase
         for (var i = 1; i <= 100; i++)
         {
             var id = Guid.NewGuid();
-            _documentIds[i] = id;
+            _variantDocumentIds[i] = id;
 
             await indexer.AddOrUpdateAsync(
                 IndexAlias,
@@ -48,7 +49,7 @@ public partial class TypesenseSearcherVarianceTests : TypesenseTestBase
                         FieldInvariance,
                         new IndexValue
                         {
-                            Texts = ["invariant", $"invariant{i}"]
+                            Texts = ["invariant", $"invariant{i}", "commoninvariant"]
                         },
                         Culture: null,
                         Segment: null
@@ -96,6 +97,36 @@ public partial class TypesenseSearcherVarianceTests : TypesenseTestBase
                             Texts = ["mixeddanish",   $"mixeddanish{i}"]
                         },
                         Culture: "da-DK",
+                        Segment: null
+                    ),
+                ],
+                null
+            );
+
+            id = Guid.NewGuid();
+            _invariantDocumentIds[i] = id;
+
+            await indexer.AddOrUpdateAsync(
+                IndexAlias,
+                id,
+                UmbracoObjectTypes.Document,
+                [
+                    new Variation(Culture: null, Segment: null)
+                ],
+                [
+                    new IndexField(
+                        Umbraco.Cms.Search.Core.Constants.FieldNames.PathIds,
+                        new IndexValue { Keywords = [id.AsKeyword()], },
+                        Culture: null,
+                        Segment: null
+                    ),
+                    new IndexField(
+                        FieldInvariance,
+                        new IndexValue
+                        {
+                            Texts = ["commoninvariant", $"commoninvariant{i}"]
+                        },
+                        Culture: null,
                         Segment: null
                     ),
                 ],

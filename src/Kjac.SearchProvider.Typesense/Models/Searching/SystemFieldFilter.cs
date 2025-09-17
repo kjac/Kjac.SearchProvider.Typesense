@@ -2,6 +2,6 @@
 
 namespace Kjac.SearchProvider.Typesense.Models.Searching;
 
-internal record SystemFieldFilter(string FieldName, string Value, bool Negate) : Filter(FieldName, Negate)
+internal record SystemFieldFilter(string FieldName, string[] Values, bool Negate) : Filter(FieldName, Negate)
 {
 }

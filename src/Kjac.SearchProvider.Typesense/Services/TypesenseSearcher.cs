@@ -60,7 +60,11 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
         Filter[] filtersAsArray = filters as Filter[] ?? filters?.ToArray() ?? [];
 
-        filtersAsArray = new Filter[] { new SystemFieldFilter(IndexConstants.FieldNames.Culture, culture.IndexCulture(), false) }
+        // must always include invariant culture when searching for a specific culture
+        string[] cultures = culture.IsNullOrWhiteSpace()
+            ? [IndexConstants.Variation.InvariantCulture]
+            : [culture.IndexCulture(), IndexConstants.Variation.InvariantCulture];
+        filtersAsArray = new Filter[] { new SystemFieldFilter(IndexConstants.FieldNames.Culture, cultures, false) }
             .Union(filtersAsArray)
             .ToArray();
 
@@ -121,7 +125,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                                         range
                                             => $"{(range.MinValue ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.MaxValue ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
                                     ),
-                                SystemFieldFilter systemFieldFilter => [$"`{systemFieldFilter.Value}`"],
+                                SystemFieldFilter systemFieldFilter => systemFieldFilter.Values.Select(value => $"`{value}`"),
                                 _ => throw new ArgumentOutOfRangeException(
                                     nameof(filter),
                                     $"Encountered an unsupported filter type: {filter.GetType().Name}"
