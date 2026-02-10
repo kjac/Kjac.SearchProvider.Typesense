@@ -123,6 +123,29 @@ public class TypesenseIndexerTests : TypesenseTestBase
         await Indexer.ResetAsync(IndexAlias);
     }
 
+    [Test]
+    public async Task CanGetIndexMetadata()
+    {
+        await IndexManager.EnsureAsync(IndexAlias);
+        Dictionary<string, Guid> ids = await CreateIndexStructure();
+
+        IndexMetadata metadata = await Indexer.GetMetadataAsync(IndexAlias);
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata.DocumentCount, Is.EqualTo(ids.Count));
+            Assert.That(metadata.HealthStatus, Is.EqualTo(Umbraco.Cms.Search.Core.Models.Indexing.HealthStatus.Healthy));
+        });
+
+        await Indexer.ResetAsync(IndexAlias);
+
+        metadata = await Indexer.GetMetadataAsync(IndexAlias);
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata.DocumentCount, Is.Zero);
+            Assert.That(metadata.HealthStatus, Is.EqualTo(Umbraco.Cms.Search.Core.Models.Indexing.HealthStatus.Empty));
+        });
+    }
+
     private async Task<Dictionary<string, Guid>> CreateIndexStructure()
     {
         var ids = new Dictionary<string, Guid>();

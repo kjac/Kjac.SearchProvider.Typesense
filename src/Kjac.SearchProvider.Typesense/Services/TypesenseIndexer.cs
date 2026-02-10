@@ -310,6 +310,25 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
     public async Task ResetAsync(string indexAlias)
         => await _indexManager.ResetAsync(indexAlias);
 
+    public async Task<IndexMetadata> GetMetadataAsync(string indexAlias)
+    {
+        try
+        {
+            CollectionResponse collectionResponse = await _typesenseClient.RetrieveCollection(_indexAliasResolver.Resolve(indexAlias));
+            return new IndexMetadata(
+                collectionResponse.NumberOfDocuments,
+                collectionResponse.NumberOfDocuments == 0
+                    ? HealthStatus.Empty
+                    : HealthStatus.Healthy
+            );
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unable to fetch the collection info for alias: {indexAlias}", indexAlias);
+            return new IndexMetadata(0, HealthStatus.Unknown);
+        }
+    }
+
     private record IndexDocument
     {
         [JsonPropertyName(IndexConstants.FieldNames.Id)]
