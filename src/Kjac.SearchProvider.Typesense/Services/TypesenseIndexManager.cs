@@ -62,64 +62,64 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
                         new(IndexConstants.FieldNames.Key, FieldType.String) { Index = false },
                         new(IndexConstants.FieldNames.ObjectType, FieldType.String) { Index = false },
                         new(IndexConstants.FieldNames.Culture, FieldType.String) { Store = _indexerOptions.StoreFields },
-                        new(IndexConstants.FieldNames.Segment, FieldType.String) { Store = _indexerOptions.StoreFields },
-                        new(IndexConstants.FieldNames.AllTextsR1, FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields },
-                        new(IndexConstants.FieldNames.AllTextsR2, FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields },
-                        new(IndexConstants.FieldNames.AllTextsR3, FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields },
-                        new(IndexConstants.FieldNames.AllTexts, FieldType.String) { Sort = true },
+                        new($"{IndexConstants.FieldNames.AllTextsPrefix}{IndexConstants.FieldNames.AllTextsR1}", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
+                        new($"{IndexConstants.FieldNames.AllTextsPrefix}{IndexConstants.FieldNames.AllTextsR2}", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
+                        new($"{IndexConstants.FieldNames.AllTextsPrefix}{IndexConstants.FieldNames.AllTextsR3}", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
+                        new($"{IndexConstants.FieldNames.AllTextsPrefix}{IndexConstants.FieldNames.AllTexts}", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
+                        new($"{IndexConstants.FieldNames.AllTextsPrefix}_.*", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
                         // property value fields
                         // NOTE: the "Sortable" fields are used both for sorting and for range facets,
                         //       so they need to be declared as both facet-able and sortable
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Keywords}{IndexConstants.FieldTypePostfix.Sortable}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Keywords}{IndexConstants.FieldTypePostfix.Sortable}",
                             FieldType.String
                         ) { Facet = true, Sort = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Keywords}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Keywords}",
                             FieldType.StringArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Integers}{IndexConstants.FieldTypePostfix.Sortable}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Integers}{IndexConstants.FieldTypePostfix.Sortable}",
                             FieldType.Float
                         ) { Facet = true, Sort = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Integers}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Integers}",
                             FieldType.FloatArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Decimals}{IndexConstants.FieldTypePostfix.Sortable}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Decimals}{IndexConstants.FieldTypePostfix.Sortable}",
                             FieldType.Float
                         ) { Facet = true, Sort = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Decimals}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Decimals}",
                             FieldType.FloatArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.DateTimeOffsets}{IndexConstants.FieldTypePostfix.Sortable}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.DateTimeOffsets}{IndexConstants.FieldTypePostfix.Sortable}",
                             FieldType.Int64
                         ) { Facet = true, Sort = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.DateTimeOffsets}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.DateTimeOffsets}",
                             FieldType.Int64Array
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Texts}{IndexConstants.FieldTypePostfix.Sortable}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Texts}{IndexConstants.FieldTypePostfix.Sortable}",
                             FieldType.String
                         ) { Facet = true, Sort = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.TextsR1}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.TextsR1}",
                             FieldType.StringArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.TextsR2}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.TextsR2}",
                             FieldType.StringArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.TextsR3}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.TextsR3}",
                             FieldType.StringArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(
-                            $"{IndexConstants.FieldNames.Fields}.*{IndexConstants.FieldTypePostfix.Texts}",
+                            $"{IndexConstants.FieldNames.FieldsPrefix}.*{IndexConstants.FieldTypePostfix.Texts}",
                             FieldType.StringArray
                         ) { Facet = true, Store = _indexerOptions.StoreFields },
                         new(".*", FieldType.Auto) { Store = _indexerOptions.StoreFields }

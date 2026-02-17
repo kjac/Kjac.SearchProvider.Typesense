@@ -81,6 +81,46 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
         string FilterValue(string fieldName, IEnumerable<string> values, Filter filter)
             => $"{fieldName}:{(filter.Negate ? "!=" : filter is KeywordFilter ? "=" : null)}[{string.Join(",", values)}]";
 
+        string RegularFilterValue(Filter filter)
+        {
+            var values = (filter switch
+                {
+                    KeywordFilter keywordFilter => keywordFilter.Values.Select(value => $"`{value}`"),
+                    IntegerExactFilter integerExactFilter => integerExactFilter.Values.Select(value => value.ToString()
+                    ),
+                    IntegerRangeFilter integerRangeFilter => integerRangeFilter.Ranges.Select(range
+                        => $"{range.MinValue ?? int.MinValue}..{(range.MaxValue ?? int.MaxValue) - 1}"
+                    ),
+                    DecimalExactFilter decimalExactFilter => decimalExactFilter.Values.Select(DecimalValue),
+                    DecimalRangeFilter decimalRangeFilter => decimalRangeFilter.Ranges.Select(range
+                        => $"{DecimalValue(range.MinValue ?? decimal.MinValue)}..{DecimalValue((range.MaxValue ?? decimal.MaxValue) - 0.01m)}"
+                    ),
+                    // Typesense expects unix timestamps for dates
+                    DateTimeOffsetExactFilter dateTimeOffsetExactFilter => dateTimeOffsetExactFilter.Values
+                        .Select(value => value.ToUnixTimeSeconds().ToString()
+                        ),
+                    DateTimeOffsetRangeFilter dateTimeOffsetRangeFilter => dateTimeOffsetRangeFilter.Ranges
+                        .Select(range
+                            => $"{(range.MinValue ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.MaxValue ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
+                        ),
+                    SystemFieldFilter systemFieldFilter => systemFieldFilter.Values.Select(value => $"`{value}`"),
+                    _ => throw new ArgumentOutOfRangeException(
+                        nameof(filter),
+                        $"Encountered an unsupported filter type: {filter.GetType().Name}"
+                    )
+                })
+                .ToArray();
+
+            var filterValue = FilterValue(FieldName(filter), values, filter);
+            if (segment.IsNullOrWhiteSpace())
+            {
+                return filterValue;
+            }
+
+            var segmentFilterValue = FilterValue(FieldName(filter, segment), values, filter);
+            return $"({filterValue} {(filter.Negate ? "&&" : "||")} {segmentFilterValue})";
+        }
+
         string TextFilterValue(TextFilter textFilter)
         {
             var values = textFilter.Values.Select(value => $"`{value}*`").ToArray();
@@ -90,7 +130,20 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
             var fieldNameTextsR3 = FieldName(textFilter.FieldName, IndexConstants.FieldTypePostfix.TextsR3);
 
             var filterOperator = textFilter.Negate ? "&&" : "||";
-            return $"({FilterValue(fieldNameTextsR1, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR2, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR3, values, textFilter)} {filterOperator} {FilterValue(fieldNameTexts, values, textFilter)})";
+
+            var filterValue = $"{FilterValue(fieldNameTextsR1, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR2, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR3, values, textFilter)} {filterOperator} {FilterValue(fieldNameTexts, values, textFilter)}";
+
+            if (segment.IsNullOrWhiteSpace())
+            {
+                return $"({filterValue})";
+            }
+
+            var fieldNameTextsForSegment = FieldName(SegmentedField(textFilter.FieldName, segment), IndexConstants.FieldTypePostfix.Texts);
+            var fieldNameTextsR1ForSegment = FieldName(SegmentedField(textFilter.FieldName, segment), IndexConstants.FieldTypePostfix.TextsR1);
+            var fieldNameTextsR2ForSegment = FieldName(SegmentedField(textFilter.FieldName, segment), IndexConstants.FieldTypePostfix.TextsR2);
+            var fieldNameTextsR3ForSegment = FieldName(SegmentedField(textFilter.FieldName, segment), IndexConstants.FieldTypePostfix.TextsR3);
+
+            return $"({filterValue} {FilterValue(fieldNameTextsR1ForSegment, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR2ForSegment, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsR3ForSegment, values, textFilter)} {filterOperator} {FilterValue(fieldNameTextsForSegment, values, textFilter)})";
         }
 
         string FilterByValue(IEnumerable<Filter> filterByFilters)
@@ -99,41 +152,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                 filterByFilters.Select(
                     filter => filter is TextFilter textFilter
                         ? TextFilterValue(textFilter)
-                        : FilterValue(
-                            FieldName(filter),
-                            filter switch
-                            {
-                                KeywordFilter keywordFilter => keywordFilter.Values.Select(value => $"`{value}`"),
-                                IntegerExactFilter integerExactFilter => integerExactFilter.Values.Select(
-                                    value => value.ToString()
-                                ),
-                                IntegerRangeFilter integerRangeFilter => integerRangeFilter.Ranges.Select(
-                                    range
-                                        => $"{range.MinValue ?? int.MinValue}..{(range.MaxValue ?? int.MaxValue) - 1}"
-                                ),
-                                DecimalExactFilter decimalExactFilter => decimalExactFilter.Values.Select(DecimalValue),
-                                DecimalRangeFilter decimalRangeFilter => decimalRangeFilter.Ranges.Select(
-                                    range
-                                        => $"{DecimalValue(range.MinValue ?? decimal.MinValue)}..{DecimalValue((range.MaxValue ?? decimal.MaxValue) - 0.01m)}"
-                                ),
-                                // Typesense expects unix timestamps for dates
-                                DateTimeOffsetExactFilter dateTimeOffsetExactFilter => dateTimeOffsetExactFilter.Values
-                                    .Select(
-                                        value => value.ToUnixTimeSeconds().ToString()
-                                    ),
-                                DateTimeOffsetRangeFilter dateTimeOffsetRangeFilter => dateTimeOffsetRangeFilter.Ranges
-                                    .Select(
-                                        range
-                                            => $"{(range.MinValue ?? DateTimeOffset.UnixEpoch).ToUnixTimeSeconds()}..{(range.MaxValue ?? DateTimeOffset.MaxValue).ToUnixTimeSeconds() - 1}"
-                                    ),
-                                SystemFieldFilter systemFieldFilter => systemFieldFilter.Values.Select(value => $"`{value}`"),
-                                _ => throw new ArgumentOutOfRangeException(
-                                    nameof(filter),
-                                    $"Encountered an unsupported filter type: {filter.GetType().Name}"
-                                )
-                            },
-                            filter
-                        )
+                        : RegularFilterValue(filter)
                 )
             );
 
@@ -172,7 +191,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
                                 if (effectiveQuery.IsNullOrWhiteSpace() is false)
                                 {
-                                    return $"_eval([({IndexConstants.FieldNames.AllTextsR1}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR1}, ({IndexConstants.FieldNames.AllTextsR2}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR2}, ({IndexConstants.FieldNames.AllTextsR3}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR3}]):{direction}";
+                                    return $"_eval([({AllTextsFieldName(IndexConstants.FieldNames.AllTextsR1, null)}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR1}, ({AllTextsFieldName(IndexConstants.FieldNames.AllTextsR2, null)}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR2}, ({AllTextsFieldName(IndexConstants.FieldNames.AllTextsR3, null)}:`{effectiveQuery}`*):{_searcherOptions.BoostFactorTextR3}]):{direction}";
                                 }
                             }
 
@@ -189,16 +208,21 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
 
             Sorter[] sortersAsArray = sorters as Sorter[] ?? sorters?.ToArray() ?? [];
 
+            var queryBy = $"{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR1, null)},{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR2, null)},{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR3, null)},{AllTextsFieldName(IndexConstants.FieldNames.AllTexts, null)}";
+            var queryByWeights = $"{_searcherOptions.BoostFactorTextR1},{_searcherOptions.BoostFactorTextR2},{_searcherOptions.BoostFactorTextR3},1";
+            if (segment.IsNullOrWhiteSpace() is false)
+            {
+                queryBy = $"{queryBy},{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR1, segment)},{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR2, segment)},{AllTextsFieldName(IndexConstants.FieldNames.AllTextsR3, segment)},{AllTextsFieldName(IndexConstants.FieldNames.AllTexts, segment)}";
+                queryByWeights = $"{queryByWeights},{queryByWeights}";
+            }
+
             MultiSearchParameters CreateMultiSearchParameters(
                 Filter[] multiSearchFilters,
                 string? facetBy,
                 bool includeDocuments)
-                => new(
-                     _indexAliasResolver.Resolve(indexAlias),
-                    query,
-                    $"{IndexConstants.FieldNames.AllTextsR1},{IndexConstants.FieldNames.AllTextsR2},{IndexConstants.FieldNames.AllTextsR3},{IndexConstants.FieldNames.AllTexts}")
+                => new( _indexAliasResolver.Resolve(indexAlias), query, queryBy)
                 {
-                    QueryByWeights = $"{_searcherOptions.BoostFactorTextR1},{_searcherOptions.BoostFactorTextR2},{_searcherOptions.BoostFactorTextR3},1",
+                    QueryByWeights = queryByWeights,
                     FilterBy = multiSearchFilters.Length > 0 ? FilterByValue(multiSearchFilters) : null,
                     FacetBy = facetBy,
                     MaxFacetValues = _searcherOptions.MaxFacetValues,
@@ -399,23 +423,26 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
         }
     }
 
-    private string FieldName(Filter filter)
+    private string FieldName(Filter filter, string? segment = null)
         => filter switch
         {
             DateTimeOffsetExactFilter or DateTimeOffsetRangeFilter => FieldName(
                 filter.FieldName,
-                IndexConstants.FieldTypePostfix.DateTimeOffsets
+                IndexConstants.FieldTypePostfix.DateTimeOffsets,
+                segment
             ),
             DecimalExactFilter or DecimalRangeFilter => FieldName(
                 filter.FieldName,
-                IndexConstants.FieldTypePostfix.Decimals
+                IndexConstants.FieldTypePostfix.Decimals,
+                segment
             ),
             IntegerExactFilter or IntegerRangeFilter => FieldName(
                 filter.FieldName,
-                IndexConstants.FieldTypePostfix.Integers
+                IndexConstants.FieldTypePostfix.Integers,
+                segment
             ),
-            KeywordFilter => FieldName(filter.FieldName, IndexConstants.FieldTypePostfix.Keywords),
-            TextFilter => FieldName(filter.FieldName, IndexConstants.FieldTypePostfix.Texts),
+            KeywordFilter => FieldName(filter.FieldName, IndexConstants.FieldTypePostfix.Keywords, segment),
+            TextFilter => FieldName(filter.FieldName, IndexConstants.FieldTypePostfix.Texts, segment),
             SystemFieldFilter => filter.FieldName,
             _ => throw new ArgumentOutOfRangeException(
                 nameof(filter),

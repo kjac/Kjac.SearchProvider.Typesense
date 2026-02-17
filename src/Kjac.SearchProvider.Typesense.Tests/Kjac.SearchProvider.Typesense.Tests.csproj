@@ -64,6 +64,9 @@
       <Compile Update="TypesenseSearcherVarianceTests.MixedVariance.cs">
         <DependentUpon>TypesenseSearcherVarianceTests.cs</DependentUpon>
       </Compile>
+      <Compile Update="TypesenseSearcherVarianceTests.SegmentVariance.cs">
+        <DependentUpon>TypesenseSearcherVarianceTests.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

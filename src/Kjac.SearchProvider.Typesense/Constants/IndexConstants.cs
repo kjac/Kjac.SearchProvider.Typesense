@@ -19,8 +19,6 @@ internal static class IndexConstants
 
         public const string Culture = "culture";
 
-        public const string Segment = "segment";
-
         public const string AccessKeys = "accessKeys";
 
         public const string AllTexts = "allTexts";
@@ -31,7 +29,9 @@ internal static class IndexConstants
 
         public const string AllTextsR3 = "allTextsR3";
 
-        public const string Fields = "fields_";
+        public const string FieldsPrefix = "fields_";
+
+        public const string AllTextsPrefix = "texts_";
     }
 
     public static class FieldTypePostfix

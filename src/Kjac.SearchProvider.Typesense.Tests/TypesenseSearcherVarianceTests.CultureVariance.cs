@@ -7,7 +7,7 @@ public partial class TypesenseSearcherVarianceTests
 {
     [TestCase("en-US", "english")]
     [TestCase("da-DK", "danish")]
-    public async Task CanQuerySingleDocumentByVariantField(string culture, string query)
+    public async Task CanQuerySingleDocumentByCultureVariantField(string culture, string query)
     {
         SearchResult result = await SearchAsync(
             query: $"{query}23",
@@ -49,7 +49,7 @@ public partial class TypesenseSearcherVarianceTests
     // pending resolution of https://github.com/typesense/typesense/issues/2430
     //[TestCase("en-US", "invariant1", 11)] // 1 + 10-19
     //[TestCase("da-DK", "invariant2", 11)] // 2 + 20-29
-    public async Task CanQueryInvariantFieldsWithVariantSearch(string culture, string query, int expectedTotal)
+    public async Task CanQueryInvariantFieldsWithCultureVariantSearch(string culture, string query, int expectedTotal)
     {
         SearchResult result = await SearchAsync(
             query: query,
@@ -68,7 +68,7 @@ public partial class TypesenseSearcherVarianceTests
     // pending resolution of https://github.com/typesense/typesense/issues/2430
     //[TestCase("en-US", "invariant1 english1", 11)] // 1 + 10-19
     //[TestCase("da-DK", "invariant2 danish2", 11)] // 2 + 20-29
-    public async Task CanQueryMixedVariantAndInvariantFieldsWithVariantSearch(string culture, string query, int expectedTotal)
+    public async Task CanQueryMixedCultureVariantAndInvariantFieldsWithVariantSearch(string culture, string query, int expectedTotal)
     {
         SearchResult result = await SearchAsync(
             query: query,
