@@ -1,6 +1,4 @@
 ﻿using System.Text.Json.Serialization.Metadata;
-using Kjac.SearchProvider.Typesense.Site.NotificationHandlers;
-using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Search.Core.Models.Searching.Faceting;
 
 namespace Kjac.SearchProvider.Typesense.Site.DependencyInjection;
@@ -39,12 +37,6 @@ public static class UmbracoBuilderExtensions
             }
         );
 
-        return builder;
-    }
-
-    public static IUmbracoBuilder RebuildIndexes(this IUmbracoBuilder builder)
-    {
-        builder.AddNotificationHandler<UmbracoApplicationStartedNotification, RebuildIndexesNotificationHandler>();
         return builder;
     }
 }

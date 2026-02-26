@@ -12,9 +12,7 @@ public class SiteComposer : IComposer
             // add core services for search abstractions
             .AddSearchCore()
             // use the Typesense search provider
-            .AddTypesenseSearchProvider()
-            // force rebuild indexes after startup
-            .RebuildIndexes();
+            .AddTypesenseSearchProvider();
 
         // configure System.Text.Json to allow serializing output models
         builder.ConfigureJsonOptions();
