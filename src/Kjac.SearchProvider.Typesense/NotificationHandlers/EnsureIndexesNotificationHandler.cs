@@ -34,7 +34,7 @@ internal sealed class EnsureIndexesNotificationHandler
         Type defaultIndexServiceType = _serviceProvider.GetRequiredService<IIndexer>().GetType();
         Type typesenseIndexerServiceType = typeof(ITypesenseIndexer);
 
-        foreach (IndexRegistration indexRegistration in _indexOptions.GetIndexRegistrations())
+        foreach (ContentIndexRegistration indexRegistration in _indexOptions.GetContentIndexRegistrations())
         {
             var shouldEnsureIndex = indexRegistration.Indexer == typesenseIndexerServiceType
                                     || (indexRegistration.Indexer == implicitIndexServiceType &&

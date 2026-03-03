@@ -20,23 +20,23 @@ public static class UmbracoBuilderExtensions
             options =>
             {
                 // register Typesense indexes for draft and published content
-                options.RegisterIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftContent,
                     UmbracoObjectTypes.Document
                 );
-                options.RegisterIndex<ITypesenseIndexer, ITypesenseSearcher, IPublishedContentChangeStrategy>(
+                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IPublishedContentChangeStrategy>(
                     CoreConstants.IndexAliases.PublishedContent,
                     UmbracoObjectTypes.Document
                 );
 
                 // register Typesense index for media
-                options.RegisterIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftMedia,
                     UmbracoObjectTypes.Media
                 );
 
                 // register Typesense index for members
-                options.RegisterIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftMembers,
                     UmbracoObjectTypes.Member
                 );
