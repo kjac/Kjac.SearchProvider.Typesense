@@ -62,6 +62,25 @@ This is also configured via `appsettings.json`:
 }
 ```
 
+## Custom content indexes
+
+If you need custom content indexes, register them with the `RegisterTypesenseContentIndex` extension method from the [`IndexOptionsExtensions`](https://github.com/kjac/Kjac.SearchProvider.Typesense/blob/main/src/Kjac.SearchProvider.Typesense/Extensions/IndexOptionsExtensions.cs). This ensures correct registration, specially in load balanced setups:
+
+```csharp
+namespace My.Site;
+
+public class AdditionalIndexesComposer : IComposer
+{
+    public void Compose(IUmbracoBuilder builder)
+        => builder.Services.Configure<IndexOptions>(options
+            => options.RegisterTypesenseContentIndex<IPublishedContentChangeStrategy>(
+                "MyPublishedContentIndex",
+                UmbracoObjectTypes.Document
+            )
+        );
+}
+```
+
 ## Extendability
 
 Generally, you should look to Umbraco search for extension points. There are however a few notable extension points in this search provider as well.

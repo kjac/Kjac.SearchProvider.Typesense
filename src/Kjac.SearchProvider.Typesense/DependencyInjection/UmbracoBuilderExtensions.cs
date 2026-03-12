@@ -1,11 +1,11 @@
-﻿using Kjac.SearchProvider.Typesense.NotificationHandlers;
+﻿using Kjac.SearchProvider.Typesense.Extensions;
+using Kjac.SearchProvider.Typesense.NotificationHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Search.Core.Configuration;
 using Umbraco.Cms.Search.Core.Services.ContentIndexing;
-using Kjac.SearchProvider.Typesense.Services;
 using CoreConstants = Umbraco.Cms.Search.Core.Constants;
 
 namespace Kjac.SearchProvider.Typesense.DependencyInjection;
@@ -20,23 +20,23 @@ public static class UmbracoBuilderExtensions
             options =>
             {
                 // register Typesense indexes for draft and published content
-                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterTypesenseContentIndex<IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftContent,
                     UmbracoObjectTypes.Document
                 );
-                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IPublishedContentChangeStrategy>(
+                options.RegisterTypesenseContentIndex<IPublishedContentChangeStrategy>(
                     CoreConstants.IndexAliases.PublishedContent,
                     UmbracoObjectTypes.Document
                 );
 
                 // register Typesense index for media
-                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterTypesenseContentIndex<IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftMedia,
                     UmbracoObjectTypes.Media
                 );
 
                 // register Typesense index for members
-                options.RegisterContentIndex<ITypesenseIndexer, ITypesenseSearcher, IDraftContentChangeStrategy>(
+                options.RegisterTypesenseContentIndex<IDraftContentChangeStrategy>(
                     CoreConstants.IndexAliases.DraftMembers,
                     UmbracoObjectTypes.Member
                 );
