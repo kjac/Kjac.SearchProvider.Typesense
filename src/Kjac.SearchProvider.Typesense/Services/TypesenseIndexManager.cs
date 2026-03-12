@@ -37,6 +37,37 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
         }
 
         indexAlias = _indexAliasResolver.Resolve(indexAlias);
+        await EnsureResolvedIndexAliasAsync(indexAlias);
+    }
+
+    public async Task ResetAsync(string indexAlias)
+    {
+        if (ShouldNotManipulateIndexes())
+        {
+            return;
+        }
+
+        indexAlias = _indexAliasResolver.Resolve(indexAlias);
+
+        try
+        {
+            await _typesenseClient.DeleteCollection(indexAlias);
+        }
+        catch (TypesenseApiNotFoundException)
+        {
+            // the index does not exist
+        }
+        catch (TypesenseApiException ex)
+        {
+            _logger.LogError(ex, "Index {indexAlias} could not be deleted.", indexAlias);
+            return;
+        }
+
+        await EnsureResolvedIndexAliasAsync(indexAlias);
+    }
+
+    private async Task EnsureResolvedIndexAliasAsync(string indexAlias)
+    {
         try
         {
             await _typesenseClient.RetrieveCollection(indexAlias);
@@ -133,31 +164,5 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
         {
             _logger.LogError(ex, "Index {indexAlias} could not be created.", indexAlias);
         }
-    }
-
-    public async Task ResetAsync(string indexAlias)
-    {
-        if (ShouldNotManipulateIndexes())
-        {
-            return;
-        }
-
-        indexAlias = _indexAliasResolver.Resolve(indexAlias);
-
-        try
-        {
-            await _typesenseClient.DeleteCollection(indexAlias);
-        }
-        catch (TypesenseApiNotFoundException)
-        {
-            // the index does not exist
-        }
-        catch (TypesenseApiException ex)
-        {
-            _logger.LogError(ex, "Index {indexAlias} could not be deleted.", indexAlias);
-            return;
-        }
-
-        await EnsureAsync(indexAlias);
     }
 }

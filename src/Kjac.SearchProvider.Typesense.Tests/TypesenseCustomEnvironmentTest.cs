@@ -18,10 +18,9 @@ public class TypesenseCustomEnvironmentTest : TypesenseTestBase
             }
         );
 
-    protected override async Task PerformOneTimeSetUpAsync()
-        => await DeleteIndex(EnvironmentIndexAlias());
-
-    protected override async Task PerformOneTimeTearDownAsync()
+    [SetUp]
+    [TearDown]
+    protected async Task CleanUp()
         => await DeleteIndex(EnvironmentIndexAlias());
 
     [Test]
@@ -30,6 +29,17 @@ public class TypesenseCustomEnvironmentTest : TypesenseTestBase
         ITypesenseClient client = GetRequiredService<ITypesenseClient>();
 
         await IndexManager.EnsureAsync(IndexAlias);
+
+        CollectionResponse collectionResponse = await client.RetrieveCollection(EnvironmentIndexAlias());
+        Assert.That(collectionResponse.Name, Is.EqualTo(EnvironmentIndexAlias()));
+    }
+
+    [Test]
+    public async Task CanResetCustomEnvironmentIndex()
+    {
+        ITypesenseClient client = GetRequiredService<ITypesenseClient>();
+
+        await IndexManager.ResetAsync(IndexAlias);
 
         CollectionResponse collectionResponse = await client.RetrieveCollection(EnvironmentIndexAlias());
         Assert.That(collectionResponse.Name, Is.EqualTo(EnvironmentIndexAlias()));
