@@ -377,13 +377,14 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
                 collectionResponse.NumberOfDocuments,
                 collectionResponse.NumberOfDocuments == 0
                     ? HealthStatus.Empty
-                    : HealthStatus.Healthy
+                    : HealthStatus.Healthy,
+                PackageConstants.ProviderIdentifier
             );
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Unable to fetch the collection info for alias: {indexAlias}", indexAlias);
-            return new IndexMetadata(0, HealthStatus.Unknown);
+            return new IndexMetadata(0, HealthStatus.Unknown, PackageConstants.ProviderIdentifier);
         }
     }
 
