@@ -59,15 +59,34 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
         // Typesense paging is 1 based
         pageNumber++;
 
-        Filter[] filtersAsArray = filters as Filter[] ?? filters?.ToArray() ?? [];
-
         // must always include invariant culture when searching for a specific culture
         string[] cultures = culture.IsNullOrWhiteSpace()
             ? [IndexConstants.Variation.InvariantCulture]
             : [culture.IndexCulture(), IndexConstants.Variation.InvariantCulture];
-        filtersAsArray = new Filter[] { new SystemFieldFilter(IndexConstants.FieldNames.Culture, cultures, false) }
-            .Union(filtersAsArray)
-            .ToArray();
+        var filterList = new List<Filter>
+        {
+            new SystemFieldFilter(IndexConstants.FieldNames.Culture, cultures, false)
+        };
+
+        // add protected access filter
+        if (accessContext?.Bypass is not true)
+        {
+            Guid[] accessKeys = accessContext is null
+                ? [Guid.Empty]
+                : new[] { Guid.Empty, accessContext.PrincipalId }.Union(accessContext.GroupIds ?? []).ToArray();
+
+            filterList.Add(
+                new SystemFieldFilter(
+                    IndexConstants.FieldNames.AccessKeys,
+                    accessKeys.Select(key => key.ToString("D")).ToArray(),
+                    false)
+            );
+        }
+
+        if (filters is not null)
+        {
+            filterList.AddRange(filters);
+        }
 
         // explicitly ignore duplicate facets
         Facet[] facetsAsArray = facets as Facet[] ?? facets?
@@ -76,7 +95,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
             .ToArray()
             ?? [];
         var facetFieldNames = facetsAsArray.Select(facet => facet.FieldName).ToArray();
-        Filter[] facetFilters = filtersAsArray.Where(f => facetFieldNames.InvariantContains(f.FieldName)).ToArray();
+        Filter[] facetFilters = filterList.Where(f => facetFieldNames.InvariantContains(f.FieldName)).ToArray();
 
         string FilterValue(string fieldName, IEnumerable<string> values, Filter filter)
             => $"{fieldName}:{(filter.Negate ? "!=" : filter is KeywordFilter ? "=" : null)}[{string.Join(",", values)}]";
@@ -272,7 +291,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
                 // add the "main" document search, which performs all filtering to return the relevant documents.
                 // this returns incorrect facet values for active facets.
                 CreateMultiSearchParameters(
-                    filtersAsArray,
+                    filterList.ToArray(),
                     FacetBy(facetsAsArray),
                     true
                 )
@@ -282,7 +301,7 @@ internal sealed class TypesenseSearcher : TypesenseServiceBase, ITypesenseSearch
             // to NOT retrieve documents for these searches - documents should only be retrieved by the "main" search.
             foreach (Filter facetFilter in facetFilters)
             {
-                Filter[] effectiveFilters = filtersAsArray.Except([facetFilter]).ToArray();
+                Filter[] effectiveFilters = filterList.Except([facetFilter]).ToArray();
                 Facet effectiveFacet = facetsAsArray
                     .First(facet => facet.FieldName.InvariantEquals(facetFilter.FieldName));
                 multiSearchParameters.Add(
