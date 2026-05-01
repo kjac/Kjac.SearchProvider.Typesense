@@ -116,6 +116,29 @@ builder.Services.Configure<SearcherOptions>(options =>
 > [!IMPORTANT]
 > Increasing the maximum number of facet values per facet can degrade your overall search performance. Use with caution.
 
+## Optimizing server resources
+
+The default Examine indexes from Umbraco CMS are no longer in use, if this search provider powers all things search - that is:
+
+* Frontend search.
+* Backoffice search.
+* The Delivery API (if applicable on your site).
+
+However, Umbraco CMS continues to keep them up-to-date with content changes. Since this is a waste of server resources, the default Examine indexes can be explicitly disabled by means of composition:
+
+```csharp
+using Umbraco.Cms.Core.Composing;
+using Kjac.SearchProvider.Typesense.DependencyInjection;
+
+namespace My.Site;
+
+public class DisableDefaultIndexesComposer : IComposer
+{
+    public void Compose(IUmbracoBuilder builder)
+        => builder.DisableDefaultExamineIndexes();
+}
+```
+
 ## Contributing
 
 Yes, please ❤️
