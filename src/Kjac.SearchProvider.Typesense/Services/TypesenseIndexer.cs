@@ -330,6 +330,13 @@ internal sealed class TypesenseIndexer : TypesenseIndexManagingServiceBase, ITyp
 
         try
         {
+            // first delete all documents with this ID, to clean up any stray variations
+            await _typesenseClient.DeleteDocuments(
+                _indexAliasResolver.Resolve(indexAlias),
+                $"{IndexConstants.FieldNames.Key}:{id}"
+            );
+
+            // next import all the variations
             List<ImportResponse> importDocumentResults = await _typesenseClient.ImportDocuments(
                  _indexAliasResolver.Resolve(indexAlias),
                 documents,

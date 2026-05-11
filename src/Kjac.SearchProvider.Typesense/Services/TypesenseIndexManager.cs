@@ -90,7 +90,7 @@ internal sealed class TypesenseIndexManager : TypesenseIndexManagingServiceBase,
                             FieldType.StringArray
                         ) { Facet = true, Store = true},
                         // system fields from Typesense
-                        new(IndexConstants.FieldNames.Key, FieldType.String) { Index = false },
+                        new(IndexConstants.FieldNames.Key, FieldType.String),
                         new(IndexConstants.FieldNames.ObjectType, FieldType.String) { Index = false },
                         new(IndexConstants.FieldNames.Culture, FieldType.String) { Store = _indexerOptions.StoreFields },
                         new($"{IndexConstants.FieldNames.AllTextsPrefix}{IndexConstants.FieldNames.AllTextsR1}", FieldType.String) { Sort = true, Store = _indexerOptions.StoreFields, Optional = true },
