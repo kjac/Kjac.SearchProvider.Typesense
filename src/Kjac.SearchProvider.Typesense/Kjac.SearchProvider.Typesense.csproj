@@ -7,7 +7,12 @@
     <Version>1.0.0-rc.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>default</LangVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Typesense" Version="7.34.1"/>
