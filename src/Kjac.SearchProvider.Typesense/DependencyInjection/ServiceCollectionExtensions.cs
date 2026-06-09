@@ -23,8 +23,12 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ITypesenseIndexManager, TypesenseIndexManager>();
         services.AddSingleton<IIndexAliasResolver, IndexAliasResolver>();
 
+        const string clientConfigSection = "TypesenseSearchProvider:Client";
+        services.Configure<ClientOptions>(configuration.GetSection(clientConfigSection));
+
+        // need to grab the client config explicitly here, in order to configure Typesense below
         var clientOptions = new ClientOptions();
-        IConfigurationSection clientConfiguration = configuration.GetSection("TypesenseSearchProvider:Client");
+        IConfigurationSection clientConfiguration = configuration.GetSection(clientConfigSection);
         if (clientConfiguration.Exists())
         {
             clientConfiguration.Bind(clientOptions);
